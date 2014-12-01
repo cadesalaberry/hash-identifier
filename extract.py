@@ -22,7 +22,15 @@ def get_id(l):
 	return re.match('.+jerar.append\(\"(.+)\"\)', l).group(1)
 
 def get_format_rules(l):
-	return re.match('.+(if len\(hash\)==len\(hs\)).+', l)
+	re.match('.+(if len\(hash\)==len\(hs\)).+', l).group(1)
+	rules = {}
+
+	if re.match('hash.isdigit()==False', l):
+		rules['d'] = 0
+	elif re.match('hash.isdigit()==True', l):
+		rules['d'] = 1
+
+	return rules
 
 
 def scan(line):
@@ -65,7 +73,7 @@ def main():
 		for line in content:
 			scan(line)
 
-	print json.dumps(dic, sort_keys=True, indent=4)
+	print json.dumps(dic, sort_keys=True, indent=2)
 
 
 
