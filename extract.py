@@ -13,12 +13,15 @@ dic = [{}]
 algorithms = {}
 
 def get_name(l):
+	# Extracts "FCS16" from "def FCS16():"
 	return re.match('def (\w+)\(\)\:', l).group(1)
 
 def get_sample(l):
+	# Extracts "4607" from "hs='4607'"
 	return re.match('.+hs=\'(.+)\'', l).group(1)
 
 def get_id(l):
+	# Extracts "101020" from "jerar.append("101020")"
 	return re.match('.+jerar.append\(\"(.+)\"\)', l).group(1)
 
 def get_format_rules(l):
@@ -27,6 +30,7 @@ def get_format_rules(l):
 
 	if re.match('hash.isdigit()==False', l):
 		rules['d'] = 0
+		print "yo"
 	elif re.match('hash.isdigit()==True', l):
 		rules['d'] = 1
 
@@ -67,7 +71,7 @@ def main():
 
 	
 
-	with open('Hash_ID_v1.1.py') as f:
+	with open('sample') as f:
 		content = f.readlines()
 
 		for line in content:
