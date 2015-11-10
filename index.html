@@ -1,0 +1,102 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>hash-identifier (v1.2)</title>
+  <meta name="description" content="Given a hash, find its algorithm.">
+  <meta name="author" content="cadesalaberry">
+
+  <link rel="stylesheet" href="css/styles.css?v=1.0">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+</head>
+
+<body>
+  
+  <form id="form">
+    <input id="hash" type="text" name="hash" label="hash" value="4067" placeholder="Type in a hash...">
+    <input type="submit" value="Guess"><br>
+    <textarea id="result" rows="4" ></textarea>
+  </form>
+
+  <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+
+  <script>
+    var hash_db = [];
+
+    var actions = {
+      letters_only: function (hash, expected) {
+        return expected === hash.match("^[A-z]+$");
+      },
+      alnumeric: function (hash, expected) {
+        return expected === hash.match("^[A-z0-9]+$");
+      },
+      digits_only: function (hash, expected) {
+        return expected === hash.match("^[0-9]+$");
+      }
+    };
+
+    function satisfy_rules (hash, rules) {
+      $.each( rules, function (key, val) {
+        valid = !actions[key](hash, val);
+        if (valid)
+          return false;
+      });
+      return true;
+    }
+
+    function hash_sorter(a, b) {
+      return a.id - b.id;
+    }
+
+    function check_hash() {
+      var hash = $('#hash').val();
+
+      console.log("Checking Hash: " + hash);
+
+      var possibilities = [];
+
+      results = hash_db.filter(function (item) {
+        return (
+          hash.length === item['size']
+          &&
+          satisfy_rules(hash, item['rules'])
+        );
+      });
+
+      results.sort(hash_sorter);
+
+      var json = JSON.stringify(results, null, 2);
+
+      var list = "";
+
+      results.forEach(function (item) {
+        list += item.name;
+        list += "\n";
+      });
+
+      if (!list) list = "No match found.";
+
+      $('#result').val(list);
+    }
+
+    $.getJSON( "./hash-identifier.db.min.json", function( data ) {
+      
+      hash_db = data;//.slice(0, 10);
+
+      check_hash();
+    });
+
+    $('#form').submit(function(e) {
+       e.preventDefault();
+       check_hash();
+       return false;
+    });
+  </script>
+
+</body>
+</html>
