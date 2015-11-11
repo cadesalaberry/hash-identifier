@@ -8,20 +8,49 @@
   <meta name="description" content="Given a hash, find its algorithm.">
   <meta name="author" content="cadesalaberry">
 
-  <link rel="stylesheet" href="css/styles.css?v=1.0">
+  <style type="text/css">
+  </style>
 
   <!--[if lt IE 9]>
   <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
   <![endif]-->
+  <link rel="stylesheet" href="https://storage.googleapis.com/code.getmdl.io/1.0.6/material.indigo-pink.min.css">
+  <script src="https://storage.googleapis.com/code.getmdl.io/1.0.6/material.min.js"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 </head>
 
 <body>
-  
-  <form id="form">
-    <input id="hash" type="text" name="hash" label="hash" value="4067" placeholder="Type in a hash...">
-    <input type="submit" value="Guess"><br>
-    <textarea id="result" rows="4" ></textarea>
-  </form>
+
+  <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+    
+    <header class="mdl-layout__header">
+      <div class="mdl-layout__header-row">
+        <div class="mdl-layout-spacer"></div>
+        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-textfield--align-right">
+          <form id="form">
+            <label class="mdl-button mdl-js-button mdl-button--icon"
+                   for="hash" onclick="check_hash()">
+              <i class="material-icons">search</i>
+            </label>
+            <div class="mdl-textfield__input-holder" >
+              <input class="mdl-textfield__input" type="text" name="sample" id="hash" placeholder="Type in a hash...">
+            </div>
+          </form>
+        </div>
+        <div class="mdl-layout-spacer"></div>
+      </div>
+    </header>
+  </div>
+
+  <div class="result-list" style="padding-top:56px;">
+    <table class="mdl-data-table mdl-js-data-table" style="width:100%" >
+      <tbody id="result">
+        <tr>
+          <td class="mdl-data-table__cell--non-numeric">Please enable javascript.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 
   <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
 
@@ -30,22 +59,34 @@
 
     var actions = {
       letters_only: function (hash, expected) {
-        return expected === hash.match("^[A-z]+$");
+        return expected === /^[A-z]+$/.test(hash);
       },
       alnumeric: function (hash, expected) {
-        return expected === hash.match("^[A-z0-9]+$");
+        return expected === /^[A-z0-9]+$/.test(hash);
       },
       digits_only: function (hash, expected) {
-        return expected === hash.match("^[0-9]+$");
+        return expected === /^[0-9]+$/.test(hash);
+      },
+      starts_with: function (hash, expected) {
+        return expected === hash.slice(0, expected.length);
+      },
+      colon_index: function (hash, expected) {
+        return expected === hash.indexOf(":");
       }
+
     };
 
-    function satisfy_rules (hash, rules) {
-      $.each( rules, function (key, val) {
-        valid = !actions[key](hash, val);
-        if (valid)
+    function satisfy_rules(hash, rules) {
+      // $.each(rules, function (key, val) {
+      for (key in rules) {
+        val = rules[key];
+        var valid = actions[key](hash, val);
+        if (!valid) {
+          console.log(valid + ":" + key + ":" + val);
           return false;
-      });
+        }
+      }
+      // );
       return true;
     }
 
@@ -72,23 +113,24 @@
 
       var json = JSON.stringify(results, null, 2);
 
+      if (results.length === 0) results = [{"name":"No match found."}];
+      
       var list = "";
-
       results.forEach(function (item) {
+        list += "<tr><td class='mdl-data-table__cell--non-numeric'>";
         list += item.name;
-        list += "\n";
+        list += "</td></tr>\n";
       });
-
-      if (!list) list = "No match found.";
-
-      $('#result').val(list);
+      $('#result').html(list);
     }
 
     $.getJSON( "./hash-identifier.db.min.json", function( data ) {
-      
       hash_db = data;//.slice(0, 10);
+      $('#form').submit();
+    });
 
-      check_hash();
+    $('#form').on('input', function() { 
+      $(this).submit() // get the current value of the input field.
     });
 
     $('#form').submit(function(e) {
